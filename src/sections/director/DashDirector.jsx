@@ -1,5 +1,7 @@
 import { PageHdr, KpiGrid, Card, Alert, IaBox, TblBtn } from '../common'
 import { showToast } from '../../components/Toast'
+import { showModal } from '../../components/ActionModal'
+import { fichaModal, propuestaModal, protocoloModal, alertaModal, informeModal } from '../../lib/modals'
 
 const CLIENTES = [
   { n:'TechPyme S.L.', neg:'SaaS', hrs:'21.5', ing:'6.450€', marg:'+78%', est:'b-ok', txt:'Óptimo' },
@@ -45,15 +47,15 @@ export function DashDirector({ goTo }) {
           <Alert tone="red"
                  title="Construcciones Arco · impago probable"
                  sub="Score de riesgo 62 · IA ha enviado recordatorio automático · respuesta estimada en 2h"
-                 actions={<TblBtn label="Ver expediente" variant="red" onClick={() => showToast('Expediente IA · Construcciones Arco · score riesgo 62 · 3 alertas abiertas','warn')} />} />
+                 actions={<TblBtn label="Ver expediente" variant="red" onClick={() => showModal(fichaModal('Construcciones Arco'))} />} />
           <Alert tone="amber"
                  title="Transportes Montes · margen negativo −5%"
                  sub="IA propone redistribuir carga administrativa · ahorro estimado 380€/mes"
-                 actions={<TblBtn label="Redistribuir" variant="amber" onClick={() => showToast('IA redistribuyendo carga · Transportes Montes · 380€/mes liberados','ok')} />} />
+                 actions={<TblBtn label="Ver expediente" variant="amber" onClick={() => showModal(fichaModal('Transportes Montes'))} />} />
           <Alert tone="blue"
                  title="Upselling detectado en 3 clientes"
                  sub="Probabilidad media 71% · asesoría financiera · ticket estimado 4.200€/año"
-                 actions={<TblBtn label="Activar IA" onClick={() => showToast('IA iniciando secuencia de upselling para 3 clientes · propuestas en 24h','ok')} />} />
+                 actions={<TblBtn label="Ver propuesta" onClick={() => showModal(propuestaModal('Grupo Inversor Norte','upselling'))} />} />
         </Card>
 
         <Card title="Acciones rápidas">
@@ -61,8 +63,8 @@ export function DashDirector({ goTo }) {
             <button className="btn btn-blue" onClick={() => goTo?.('rentabilidad')}>Ver rentabilidad por cliente →</button>
             <button className="btn btn-blue" onClick={() => goTo?.('clientes')}>Ir a cartera de clientes →</button>
             <button className="btn btn-blue" onClick={() => goTo?.('riesgo')}>Revisar Motor de Riesgo →</button>
-            <button className="btn btn-outline" onClick={() => showToast('Informe ejecutivo Q1 exportado en PDF · KonGest IA','ok')}>Exportar informe ejecutivo</button>
-            <button className="btn btn-outline" onClick={() => showToast('Simulación fiscal IA ejecutada para cartera completa · 14 clientes','info')}>Simular escenario fiscal cartera</button>
+            <button className="btn btn-outline" onClick={() => showModal(informeModal('BI'))}>Exportar informe ejecutivo</button>
+            <button className="btn btn-outline" onClick={() => goTo?.('simulador')}>Simular escenario fiscal cartera</button>
           </div>
           <IaBox style={{marginTop:12}}>
             <strong>IA sugerencia:</strong> Revisa <em>Motor de Riesgo</em> antes de cerrar el día — hay 2 clientes que requieren tu atención directa.
@@ -83,7 +85,7 @@ export function DashDirector({ goTo }) {
                   <td style={{color:'#1A78FF',fontWeight:700}}>{c.ing}</td>
                   <td style={{color:c.marg.startsWith('−') ? '#e03030' : c.est === 'b-red' ? '#e03030' : '#1a9e4a',fontWeight:700}}>{c.marg}</td>
                   <td><span className={`badge ${c.est}`}>{c.txt}</span></td>
-                  <td><TblBtn label="Ver →" onClick={() => showToast(`Expediente IA · ${c.n} · margen ${c.marg} · ${c.hrs}h Q1`,'info')} /></td>
+                  <td><TblBtn label="Ver →" onClick={() => showModal(fichaModal(c.n === 'Almacenes Valdés' ? 'Almacenes Valdés S.L.' : c.n))} /></td>
                 </tr>
               ))}
             </tbody>

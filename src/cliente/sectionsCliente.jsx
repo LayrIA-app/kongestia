@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { PageHdr, KpiGrid, Card, Alert, IaBox, TblBtn, IaTicker, InfoRow, Pbar } from '../sections/common'
 import { showToast } from '../components/Toast'
+import { showModal } from '../components/ActionModal'
+import { modeloAEATModal, facturaModal, deduccionModal, informeModal, alertaModal, documentoModal } from '../lib/modals'
+import { CLIENTE_ACTUAL } from '../lib/clientes'
 
 const TICKER_CL = [
   'Tu Mod. 303 Q1 está listo · 4.280€ · vence 20 Mar · borrador revisado por Laura',
@@ -9,13 +12,36 @@ const TICKER_CL = [
   'Consulta IVA Q1 gestionada por VOZ IA · respuesta inmediata · sin llamar al asesor',
 ]
 
-const clAct = (t, c) => showToast({
-  firmar:`${c} · firmando con certificado digital · presentación AEAT en curso`,
-  draft:`${c} · draft IA listo · pendiente tu revisión`,
-  contacto:`Laura Sánchez · ${c} · respuesta en 2h · KonGest IA te notificará`,
-  descarga:`Descargando ${c} · PDF firmado con sello temporal`,
-  aplicar:`${c} aplicada · reflejada en tu borrador fiscal`,
-}[t] || 'Acción ejecutada','ok')
+/* Modal genérico para contactar a la asesora (Laura) */
+function contactarAsesora(motivo = 'consulta') {
+  const a = CLIENTE_ACTUAL.asesora
+  return {
+    type:'cliente', accent:'#1A78FF',
+    eyebrow:'Contacto asesora',
+    title:`Contactar a Laura Sánchez`,
+    subtitle:'Tu asesora asignada · KonGest IA',
+    badges:[{cls:'b-ok',txt:'Respuesta media 2h'}],
+    fields:[
+      {label:'Asesora', value:'Laura Sánchez', span:'full'},
+      {label:'Email', value:a.email, span:'full'},
+      {label:'Teléfono', value:`+${a.phone}`},
+      {label:'Motivo sugerido', value:motivo, span:'full'},
+    ],
+    sections:[
+      {title:'Mensaje IA preparado', note:`KonGest IA ya ha redactado un mensaje contextual basándose en tu situación fiscal actual. Puedes editarlo antes de enviar.`},
+    ],
+    editLabel:'Editar mensaje',
+    email:{
+      to:a.email,
+      subject:`${CLIENTE_ACTUAL.nombre} · ${motivo}`,
+      body:`Hola Laura,\n\nTe escribo desde ${CLIENTE_ACTUAL.nombre} para comentar: ${motivo}.\n\n¿Cuándo podemos hablar?\n\nUn saludo,\n${CLIENTE_ACTUAL.nombre}`,
+    },
+    whatsapp:{
+      phone:a.phone,
+      text:`Hola Laura, soy ${CLIENTE_ACTUAL.nombre}. Quería comentarte: ${motivo}. ¿Hablamos cuando puedas?`,
+    },
+  }
+}
 
 /* ═══════════════ 1. DASHBOARD CLIENTE ═══════════════ */
 const OBLIGACIONES = [
@@ -70,7 +96,7 @@ export function ClDash({ goTo }) {
         </Card>
         <Card title="Alertas de tu asesor" ia>
           <Alert tone="red" title="Mod. 303 — vence el 20 de marzo" sub="4.280€ a ingresar · Borrador listo · Solo necesitas dar el OK"
-                 actions={<TblBtn label="Firmar" variant="red" onClick={() => clAct('firmar','Mod. 303 Q1 · 4.280€')} />} />
+                 actions={<TblBtn label="Firmar" variant="red" onClick={() => showModal(modeloAEATModal({modelo:'303',cliente:'TechPyme S.L.',periodo:'Q1 2026',resultado:'A ingresar 4.280€',estado:'Borrador IA listo',estadoCls:'b-ok'}))} />} />
           <Alert tone="green" title="IA detectó deducción aplicable"
                  sub="Gastos en software cualifican como I+D. Ahorro potencial: 2.800€ · En tramitación"
                  actions={<TblBtn label="Ver detalle" variant="green" onClick={() => goTo?.('cl-ahorro')} />} />
@@ -159,8 +185,8 @@ export function ClIVA() {
             </div>
           </div>
           <div style={{marginTop:12,display:'flex',gap:8,flexWrap:'wrap'}}>
-            <button className="btn btn-blue" onClick={() => clAct('firmar','Mod. 303 Q1 · 4.280€')}>Firmar Mod. 303</button>
-            <button className="btn btn-outline" onClick={() => clAct('descarga','desglose IVA Q1')}>Descargar desglose</button>
+            <button className="btn btn-blue" onClick={() => showModal(modeloAEATModal({modelo:'303',cliente:'TechPyme S.L.',periodo:'Q1 2026',resultado:'A ingresar 4.280€',estado:'Borrador IA listo',estadoCls:'b-ok'}))}>Firmar Mod. 303</button>
+            <button className="btn btn-outline" onClick={() => showModal(informeModal('ahorro'))}>Descargar desglose</button>
           </div>
         </Card>
         <Card title="Evolución IVA 2026" ia>
@@ -215,7 +241,7 @@ export function ClIRPF() {
                     <td style={{color:'#7a8899'}}>{f}</td>
                     <td style={{color:'#1A78FF',fontWeight:700}}>{r}</td>
                     <td><span className={`badge ${b}`}>{e}</span></td>
-                    <td><TblBtn label={b==='b-ok'?'Ver':'Aplicar'} variant={b==='b-ok'?'blue':'amber'} onClick={() => clAct(b==='b-ok'?'descarga':'firmar',`Retención ${m}`)} /></td>
+                    <td><TblBtn label={b==='b-ok'?'Ver':'Firmar'} variant={b==='b-ok'?'blue':'amber'} onClick={() => showModal(modeloAEATModal({modelo:'111',cliente:'TechPyme S.L.',periodo:m,resultado:`A ingresar ${r}`,estado:e,estadoCls:b}))} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -225,7 +251,7 @@ export function ClIRPF() {
         <Card title="IS 2026 — con deducciones IA" ia>
           {IS_DESGLOSE.map(([k,v,c]) => <InfoRow key={k} label={k} value={v} color={c} />)}
           <div style={{marginTop:10,display:'flex',gap:8,flexWrap:'wrap'}}>
-            <button className="btn btn-blue" onClick={() => clAct('draft','Borrador IS 2026')}>Ver borrador IS</button>
+            <button className="btn btn-blue" onClick={() => showModal(modeloAEATModal({modelo:'200',cliente:'TechPyme S.L.',periodo:'IS 2026',resultado:'A ingresar 5.913€',estado:'Borrador IA con deducciones',estadoCls:'b-blue'}))}>Ver borrador IS</button>
           </div>
         </Card>
       </div>
@@ -267,7 +293,7 @@ export function ClFacturas() {
                   <td style={{fontWeight:700,color:'#1a9e4a'}}>{i}</td>
                   <td style={{color:'#7a8899',fontSize:'.7rem'}}>{f}</td>
                   <td><span className={`badge ${b}`}>{e}</span></td>
-                  <td><TblBtn label={b==='b-red'?'Reclamar':b==='b-amber'?'Recordar':'Ver'} variant={b==='b-red'?'red':b==='b-amber'?'amber':'blue'} onClick={() => clAct(b==='b-ok'?'descarga':'contacto',`Factura ${n}`)} /></td>
+                  <td><TblBtn label={b==='b-red'?'Reclamar':b==='b-amber'?'Recordar':'Ver'} variant={b==='b-red'?'red':b==='b-amber'?'amber':'blue'} onClick={() => showModal(facturaModal({num:n,cliente:c,concepto:co,importe:i,fecha:f,estado:e,estadoCls:b}))} /></td>
                 </tr>
               ))}
             </tbody>
@@ -312,7 +338,7 @@ export function ClDocumentos() {
                     <td style={{fontSize:'.75rem'}}>{c}</td>
                     <td style={{color:'#7a8899',fontSize:'.7rem'}}>{f}</td>
                     <td style={{fontSize:'.7rem',color:b==='b-ok'?'#7a8899':'#e8a010'}}>{r}</td>
-                    <td><TblBtn label={b==='b-ok'?'PDF':'Firmar'} variant={b==='b-ok'?'blue':'amber'} onClick={() => clAct(b==='b-ok'?'descarga':'firmar',`Mod. ${m} ${c}`)} /></td>
+                    <td><TblBtn label={b==='b-ok'?'PDF':'Firmar'} variant={b==='b-ok'?'blue':'amber'} onClick={() => showModal(modeloAEATModal({modelo:m,cliente:'TechPyme S.L.',periodo:c,resultado:r,estado:b==='b-ok'?'Presentado':e,estadoCls:b}))} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -370,13 +396,13 @@ export function ClPrevision() {
         <Card title="Cómo reducir tu carga fiscal" ia>
           <Alert tone="green" title="Deduce gastos de software — ahorro 2.800€"
                  sub="Tus licencias cualifican como I+D. Tu asesor está tramitando la deducción"
-                 actions={<TblBtn label="Ver trámite" variant="green" onClick={() => clAct('aplicar','Deducción I+D software')} />} />
+                 actions={<TblBtn label="Ver trámite" variant="green" onClick={() => showModal(deduccionModal({nombre:'Deducción I+D · Software y licencias',ahorro:'2.800€',descripcion:'Tus licencias de software y gastos de desarrollo cualifican como I+D fiscal. KonGest IA ha preparado la documentación técnica requerida por la AEAT: memoria I+D, certificación de gastos y ficha del proyecto.'}))} />} />
           <Alert tone="green" title="Reserva de capitalización — ahorro 5.500€"
                  sub="Con tus fondos propios puedes aplicar la reserva en IS 2026. Aplicado al borrador"
-                 actions={<TblBtn label="Ver en IS" variant="green" onClick={() => clAct('aplicar','Reserva capitalización')} />} />
+                 actions={<TblBtn label="Ver en IS" variant="green" onClick={() => showModal(deduccionModal({nombre:'Reserva de capitalización IS 2026',ahorro:'5.500€',descripcion:'Con los fondos propios actuales de TechPyme, la reserva de capitalización reduce la base imponible en 22.000€. KonGest IA ya ha aplicado la reserva al borrador del Mod. 200 IS 2026.'}))} />} />
           <Alert tone="blue" title="Amortización acelerada vehículo — ahorro 1.200€"
                  sub="El vehículo 2026 puede amortizarse al 100% este ejercicio"
-                 actions={<TblBtn label="Aplicar" onClick={() => clAct('aplicar','Amortización acelerada')} />} />
+                 actions={<TblBtn label="Aplicar" onClick={() => showModal(deduccionModal({nombre:'Amortización acelerada · Vehículo empresa',ahorro:'1.200€',descripcion:'El vehículo adquirido en 2026 cumple los requisitos para amortizarse al 100% este ejercicio (régimen pyme). Aplicable en el IS 2026 sin limitación.'}))} />} />
           <IaBox><strong>Total ahorro detectado: 9.500€.</strong> KonGest IA los está tramitando automáticamente con tu asesor.</IaBox>
         </Card>
       </div>
@@ -601,7 +627,7 @@ export function ClAhorro() {
             </div>
           </div>
           <div style={{marginTop:14,display:'flex',gap:8,flexWrap:'wrap'}}>
-            <button className="btn btn-blue" onClick={() => clAct('descarga','Informe ahorro IA 2026')}>Descargar informe</button>
+            <button className="btn btn-blue" onClick={() => showModal(informeModal('ahorro'))}>Descargar informe</button>
           </div>
         </Card>
       </div>
@@ -626,7 +652,7 @@ export function ClFuturo() {
         <Card title="Oportunidades futuras" ia>
           <Alert tone="green" title="Amortización acelerada equipos informáticos · +1.200€"
                  sub="Inversión Q4 2026 cualifica para amortización 100% un año · impacto IS 2026"
-                 actions={<TblBtn label="Activar" variant="green" onClick={() => clAct('aplicar','Amortización acelerada equipos')} />} />
+                 actions={<TblBtn label="Activar" variant="green" onClick={() => showModal(deduccionModal({nombre:'Amortización acelerada · Equipos informáticos Q4',ahorro:'1.200€',descripcion:'La inversión prevista en Q4 2026 en equipos informáticos (servidores, portátiles, infraestructura) puede amortizarse al 100% durante el primer año aplicando el régimen especial de pymes.'}))} />} />
           <Alert tone="green" title="Plan pensiones autónomos · +680€"
                  sub="Aportación óptima 5.750€/año · ahorro IRPF 1.150€ · recuperable desde jubilación"
                  actions={<TblBtn label="Simular" variant="green" onClick={() => showToast('Plan pensiones · aportación 5.750€ · ahorro IRPF 1.150€ · simulación completa','info')} />} />

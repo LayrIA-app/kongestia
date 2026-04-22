@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { PageHdr, KpiGrid, Card, Alert, IaBox, TblBtn, IaTicker, Pbar, InfoRow } from '../common'
 import { showToast } from '../../components/Toast'
+import { showModal } from '../../components/ActionModal'
+import {
+  fichaModal, modeloAEATModal, firmarModeloModal, recordatorioModal,
+  anomaliaModal, vencimientoModal, documentoModal, alertaModal, informeModal,
+  propuestaModal, protocoloModal,
+} from '../../lib/modals'
 
 const TICKER_AS = [
   '3 modelos críticos vencen hoy antes 20h · cola IA optimizada en 45 min',
@@ -10,13 +16,12 @@ const TICKER_AS = [
   'Mod. 349 Farmacia Beltrán firmado · presentado AEAT · 0 incidencias',
 ]
 
-const asAct = (t, c) => showToast({
-  recordatorio:`KonGest IA envió recordatorio automático a ${c}`,
-  firmar:`Mod. firmado · ${c} · presentado AEAT · ticket de confirmación recibido`,
-  revisar:`Expediente ${c} cargado · datos fiscales, histórico y contexto IA`,
-  corregir:`Corrección IA aplicada · ${c} · asiento ajustado`,
-  doc:`Documento abierto · ${c}`,
-}[t] || 'Acción IA ejecutada', 'ok')
+const normalize = (n) => (n || '')
+  .replace(/^Almacenes Valdés$/, 'Almacenes Valdés S.L.')
+  .replace(/^TechPyme$/, 'TechPyme S.L.')
+  .replace(/^Industrias Clave$/, 'Industrias Clave S.A.')
+  .replace(/^Farmacia B\.$/, 'Farmacia Beltrán')
+  .replace(/^Clínica Sur$/, 'Clínica Sur S.L.')
 
 /* ═══════════════ 1. ASESOR DASHBOARD ═══════════════ */
 const TAREAS = [
@@ -65,9 +70,9 @@ export function AsesorDash() {
         </Card>
         <Card title="Alertas IA de hoy" ia>
           <Alert tone="red" title="Modelo 303 TechPyme — vence hoy 20h" sub="KonGest IA tiene el borrador completo listo · Solo necesitas revisar y firmar"
-                 actions={<TblBtn label="Abrir" variant="red" onClick={() => asAct('firmar','TechPyme S.L.')} />} />
+                 actions={<TblBtn label="Abrir" variant="red" onClick={() => showModal(firmarModeloModal({modelo:'303',cliente:'TechPyme S.L.',resultado:'A ingresar 4.280€',estado:'Firmar antes 20h',estadoCls:'b-red',orden:1}))} />} />
           <Alert tone="amber" title="Anomalía contable — Construcciones Arco" sub="IVA deducido en factura FRA-2026-0089 no cuadra · Revisión sugerida"
-                 actions={<TblBtn label="Revisar" variant="amber" onClick={() => asAct('revisar','Construcciones Arco')} />} />
+                 actions={<TblBtn label="Revisar" variant="amber" onClick={() => showModal(anomaliaModal({cliente:'Construcciones Arco',tipo:'IVA deducido · factura FRA-2026-0089 no cuadra',impacto:'182€',factura:'FRA-2026-0089'}))} />} />
           <Alert tone="blue" title="Cambio normativo — DGT V0142-25" sub="Afecta a 4 de tus clientes · KonGest IA actualizó sus fichas automáticamente" />
           <Alert tone="green" title="KonGest IA ahorró 14h esta semana" sub="11 modelos generados · 28 facturas contabilizadas · 3 anomalías detectadas" />
         </Card>
@@ -130,7 +135,7 @@ export function AsClientes() {
                   <td style={{color:'#7a8899'}}>{u}</td>
                   <td style={{fontWeight:600,color:b==='b-red'?'#e03030':b==='b-amber'?'#e8a010':'#1A78FF'}}>{v}</td>
                   <td><span className={`badge ${b}`}>{e}</span></td>
-                  <td><TblBtn label="Recordatorio" onClick={() => asAct('recordatorio', n)} /></td>
+                  <td><TblBtn label="Recordatorio" onClick={() => showModal(recordatorioModal(n, '303', v))} /></td>
                 </tr>
               ))}
             </tbody>
@@ -185,7 +190,7 @@ export function AsCalendario() {
                 </div>
                 <div style={{fontSize:'.68rem',color:'#7a8899'}}>{v.clientes.join(' · ')}</div>
               </div>
-              <button className="btn btn-blue btn-sm" onClick={() => showToast(`Abriendo Mod. ${v.modelo} · ${v.clientes.length} clientes · Borrador IA listo`,'info')}>Ver →</button>
+              <button className="btn btn-blue btn-sm" onClick={() => showModal(vencimientoModal({modelo:v.modelo,clientes:v.clientes.map(normalize),fecha:`${v.fecha} Mar 2026`,estado:v.cls,txt:v.txt}))}>Ver →</button>
             </div>
           ))}
         </Card>
@@ -406,7 +411,7 @@ export function AsModelos() {
                   <td style={{fontSize:'.72rem',fontWeight:600,color:r.includes('ingresar')?'#e03030':r.includes('devolver')?'#1a9e4a':'#7a8899'}}>{r}</td>
                   <td style={{fontSize:'.65rem',color:'#7a8899'}}>{g}</td>
                   <td><span className={`badge ${b}`}>{e}</span></td>
-                  <td><button className="btn btn-blue btn-sm" onClick={() => showToast(`Abriendo Mod. ${m} · ${c} · ${r}`,'info')}>Abrir →</button></td>
+                  <td><button className="btn btn-blue btn-sm" onClick={() => showModal(modeloAEATModal({modelo:m,cliente:normalize(c),periodo:p,resultado:r,estado:e,estadoCls:b}))}>Abrir →</button></td>
                 </tr>
               ))}
             </tbody>
@@ -454,7 +459,7 @@ export function AsFirma() {
                   <td style={{fontSize:'.7rem',color:'#7a8899'}}>{m}</td>
                   <td style={{fontSize:'.72rem',fontWeight:600,color:r.includes('ingresar')?'#e03030':r.includes('devolver')?'#1a9e4a':'#7a8899'}}>{r}</td>
                   <td><span className={`badge ${b}`}>{e}</span></td>
-                  <td><TblBtn label="Firmar" variant={b==='b-red'?'red':b==='b-amber'?'amber':'blue'} onClick={() => asAct('firmar', `${c} · ${m}`)} /></td>
+                  <td><TblBtn label="Firmar" variant={b==='b-red'?'red':b==='b-amber'?'amber':'blue'} onClick={() => showModal(firmarModeloModal({modelo:m,cliente:normalize(c),resultado:r,estado:e,estadoCls:b,orden:o}))} /></td>
                 </tr>
               ))}
             </tbody>
@@ -491,13 +496,13 @@ export function AsAnomalias() {
         <Card title="Anomalías activas" ia>
           <Alert tone="red" title="María González — IVA deducido inconsistente"
                  sub="Factura FRA-2026-0139: IVA 21% vs 10% aplicable · Diferencia 182€ · Corrección IA preparada"
-                 actions={<TblBtn label="Aplicar" variant="red" onClick={() => asAct('corregir','María González FRA-2026-0139')} />} />
+                 actions={<TblBtn label="Aplicar" variant="red" onClick={() => showModal(anomaliaModal({cliente:'María González',tipo:'IVA deducido inconsistente (21% vs 10% sector)',impacto:'182€',factura:'FRA-2026-0139'}))} />} />
           <Alert tone="amber" title="Construcciones Arco — asiento duplicado"
                  sub="FRA-0892 Hierros del Norte · duplicada Feb · importe 4.820€ · Propuesta IA lista"
-                 actions={<TblBtn label="Aplicar" variant="amber" onClick={() => asAct('corregir','Construcciones Arco FRA-0892')} />} />
+                 actions={<TblBtn label="Aplicar" variant="amber" onClick={() => showModal(anomaliaModal({cliente:'Construcciones Arco',tipo:'Asiento duplicado · FRA-0892 Hierros del Norte',impacto:'4.820€',factura:'FRA-0892'}))} />} />
           <Alert tone="amber" title="Transportes Montes — módulos inconsistentes"
                  sub="Módulos Q4 no cuadran con facturación real · Diferencia 2.840€ · Requiere revisión antes cierre Q1"
-                 actions={<TblBtn label="Revisar" variant="amber" onClick={() => asAct('revisar','Transportes Montes módulos Q4')} />} />
+                 actions={<TblBtn label="Revisar" variant="amber" onClick={() => showModal(anomaliaModal({cliente:'Transportes Montes',tipo:'Módulos fiscales no cuadran con facturación real',impacto:'2.840€',factura:'Módulos Q4 2026'}))} />} />
           <IaBox><strong>KonGest IA tiene preparadas las correcciones</strong> para las 3 anomalías. Solo necesitas revisar y aprobar cada una. Tiempo estimado: 12 minutos.</IaBox>
         </Card>
         <Card title="Historial de anomalías resueltas">
@@ -675,16 +680,16 @@ export function AsCierre() {
         <Card title="Oportunidades de ahorro detectadas IA" ia>
           <Alert tone="green" title="Grupo Inversor Norte — deducción I+D aplicable"
                  sub="Gastos en software 2026 cualifican como I+D. Ahorro potencial: 8.400€ · Documentación preparada"
-                 actions={<TblBtn label="Aplicar IA" variant="green" onClick={() => asAct('corregir','I+D · Grupo Inversor Norte')} />} />
+                 actions={<TblBtn label="Aplicar IA" variant="green" onClick={() => showModal(propuestaModal('Grupo Inversor Norte','propuesta'))} />} />
           <Alert tone="green" title="Industrias Clave — reserva capitalización"
                  sub="Con fondos propios actuales, la reserva reduce base en 22.000€. Ahorro: 5.500€"
-                 actions={<TblBtn label="Aplicar IA" variant="green" onClick={() => asAct('corregir','Reserva cap. · Industrias Clave')} />} />
+                 actions={<TblBtn label="Aplicar IA" variant="green" onClick={() => showModal(propuestaModal('Industrias Clave S.A.','propuesta'))} />} />
           <Alert tone="blue" title="TechPyme S.L. — amortización acelerada"
                  sub="Inversión en servidores Q4 puede amortizarse al 100% en 2026. Ahorro: 2.800€"
-                 actions={<TblBtn label="Aplicar IA" onClick={() => asAct('corregir','Amortización · TechPyme')} />} />
+                 actions={<TblBtn label="Aplicar IA" onClick={() => showModal(propuestaModal('TechPyme S.L.','propuesta'))} />} />
           <Alert tone="amber" title="Transportes Montes — ajuste previo necesario"
                  sub="Anomalía en módulos fiscales Q4 debe resolverse antes de presentar IS"
-                 actions={<TblBtn label="Revisar" variant="amber" onClick={() => asAct('revisar','Módulos Q4 · Transportes Montes')} />} />
+                 actions={<TblBtn label="Revisar" variant="amber" onClick={() => showModal(anomaliaModal({cliente:'Transportes Montes',tipo:'Módulos fiscales · ajuste previo IS',impacto:'2.840€',factura:'Módulos Q4 2026'}))} />} />
         </Card>
       </div>
     </>

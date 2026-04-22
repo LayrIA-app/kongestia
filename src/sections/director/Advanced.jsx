@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { PageHdr, KpiGrid, Card, Alert, IaBox, TblBtn, IaTicker, Pbar } from '../common'
 import { ChartJS } from '../../components/ChartJS'
 import { showToast } from '../../components/Toast'
+import { showModal } from '../../components/ActionModal'
+import { fichaModal, propuestaModal, protocoloModal, ajustePrecioModal, leadModal, alertaModal, informeModal } from '../../lib/modals'
 
 const TICKER = [
   'KonGest IA detectó ratio IVA atípico en Construcciones Arco — documentación preventiva generada',
@@ -10,15 +12,23 @@ const TICKER = [
   'Impago probable en Construcciones Arco — recordatorio enviado',
 ]
 
-const dirAct = (t, c) => showToast({
-  reclamar:`KonGest IA envió reclamación automática a ${c}`,
-  protocolo:`Protocolo de riesgo tributario activado para ${c}`,
-  'doc-prev':`Documentación preventiva IA generada para ${c}`,
-  'ver-expediente':`Expediente IA de ${c} cargado`,
-  honorarios:`Motor de precio IA calculando honorarios óptimos para ${c}`,
-  propuesta:`Propuesta IA generada para ${c}`,
-  upselling:`IA iniciando upselling para ${c}`,
-}[t] || 'Acción IA ejecutada', t.includes('protocolo') || t.includes('doc-prev') ? 'warn' : 'ok')
+const dirAct = (t, c) => {
+  const fullName = (c || '').includes('Almacenes Valdés') && !c.includes('S.L.') ? 'Almacenes Valdés S.L.' :
+                   c === 'Industrias Clave' ? 'Industrias Clave S.A.' :
+                   c === 'Clínica Sur' ? 'Clínica Sur S.L.' :
+                   c === 'TechPyme' ? 'TechPyme S.L.' :
+                   c === 'Farmacia B.' ? 'Farmacia Beltrán' : c
+  if (t === 'propuesta') return showModal(propuestaModal(fullName, 'propuesta'))
+  if (t === 'upselling') return showModal(propuestaModal(fullName, 'upselling'))
+  if (t === 'honorarios') return showModal(propuestaModal(fullName, 'honorarios'))
+  if (t === 'retencion') return showModal(propuestaModal(fullName, 'retencion'))
+  if (t === 'protocolo') return showModal(protocoloModal(fullName, 'protocolo'))
+  if (t === 'doc-prev') return showModal(protocoloModal(fullName, 'doc-prev'))
+  if (t === 'alerta-ia') return showModal(protocoloModal(fullName, 'alerta-ia'))
+  if (t === 'ver-expediente') return showModal(fichaModal(fullName))
+  if (t === 'reclamar') return showModal(protocoloModal(fullName, 'alerta-ia'))
+  showToast(`${t} · ${c}`, 'info')
+}
 
 /* ═══════ MOTOR DE RIESGO ═══════ */
 const RIESGO = [
@@ -150,7 +160,7 @@ export function DirCartera() {
                  actions={<TblBtn label="Upselling IA" onClick={() => dirAct('upselling','Grupo Inversor Norte')} />} />
           <Alert tone="green" title="8 clientes con perfil ideal para referidos"
                  sub="IA ha preparado propuesta de programa de referidos personalizada"
-                 actions={<TblBtn label="Lanzar campaña" variant="green" onClick={() => showToast('Campaña de referidos lanzada · 8 clientes contactados IA','ok')} />} />
+                 actions={<TblBtn label="Ver propuesta" variant="green" onClick={() => showModal(propuestaModal('Grupo Inversor Norte','propuesta'))} />} />
         </Card>
         <Card title="Score predictivo por cliente" ia>
           <div style={{display:'flex',flexDirection:'column',gap:10,marginTop:6}}>
@@ -200,7 +210,7 @@ export function DirPrecio() {
                   <td style={{color:'#1A78FF',fontWeight:700}}>{r.sug}</td>
                   <td style={{color:r.col,fontWeight:700}}>{r.delta}</td>
                   <td style={{color:'#1a9e4a',fontWeight:700}}>{r.pot}</td>
-                  <td><TblBtn label="Enviar propuesta" variant="blue" onClick={() => showToast(`Propuesta de ajuste ${r.delta} enviada a ${r.c} · retorno estimado ${r.pot}`,'ok')} /></td>
+                  <td><TblBtn label="Enviar propuesta" variant="blue" onClick={() => showModal(ajustePrecioModal({cliente:r.c.includes('Industrias')?'Industrias Clave S.A.':r.c,actual:r.actual,sugerida:r.sug,delta:r.delta,potencial:r.pot}))} /></td>
                 </tr>
               ))}
             </tbody>
@@ -422,13 +432,13 @@ export function DirCaptacion() {
           <div style={{display:'flex',flexDirection:'column',gap:10,marginTop:6}}>
             <Alert tone="blue" title="Manufacturas del Norte S.L."
                    sub="Pyme industrial 35 emp. · Sin asesoría IA · Valor estimado 12.400€/año"
-                   actions={<TblBtn label="Contactar" onClick={() => showToast('IA contactando · Manufacturas del Norte · email + LinkedIn enviados','ok')} />} />
+                   actions={<TblBtn label="Contactar" onClick={() => showModal(leadModal({nombre:'Manufacturas del Norte S.L.',tipo:'Pyme industrial · 35 empleados',valor:'12.400€/año',canal:'Email + LinkedIn'}))} />} />
             <Alert tone="blue" title="Dr. Martínez — Clínica privada"
                    sub="Profesional liberal · Régimen fiscal mejorable · Valor estimado 8.800€/año"
-                   actions={<TblBtn label="Contactar" onClick={() => showToast('IA contactando · Dr. Martínez · propuesta fiscal enviada','ok')} />} />
+                   actions={<TblBtn label="Contactar" onClick={() => showModal(leadModal({nombre:'Dr. Martínez · Clínica privada',tipo:'Profesional liberal · Consulta privada',valor:'8.800€/año',canal:'Email + llamada directa'}))} />} />
             <Alert tone="green" title="Referido de Grupo Inversor Norte"
                    sub="Holding familiar · Alta probabilidad cierre · Reunión programada 28 Mar"
-                   actions={<TblBtn label="Ver ficha" variant="green" onClick={() => showToast('Ficha referido · preparación reunión 28 Mar · briefing IA listo','info')} />} />
+                   actions={<TblBtn label="Ver ficha" variant="green" onClick={() => showModal(leadModal({nombre:'Referido · Grupo Inversor Norte',tipo:'Holding familiar',valor:'18.000€/año estimado',canal:'Reunión 28 Mar · briefing IA listo'}))} />} />
           </div>
         </Card>
       </div>
@@ -452,16 +462,16 @@ export function DirDetector() {
         <Card title="Oportunidades priorizadas IA" ia>
           <Alert tone="green" title="Grupo Inversor Norte · asesoría financiera"
                  sub="Ticket estimado 4.200€/año · probabilidad 74% · reunión programada 28 Mar"
-                 actions={<TblBtn label="Preparar propuesta" variant="green" onClick={() => showToast('Propuesta asesoría financiera lista · Grupo Inversor Norte · 4.200€/año','ok')} />} />
+                 actions={<TblBtn label="Ver propuesta" variant="green" onClick={() => showModal(propuestaModal('Grupo Inversor Norte','upselling'))} />} />
           <Alert tone="green" title="8 clientes · programa referidos"
                  sub="Propuesta personalizada preparada · impacto estimado 18.400€/año"
-                 actions={<TblBtn label="Lanzar campaña" variant="green" onClick={() => showToast('Campaña referidos lanzada · 8 clientes contactados · KonGest IA activo','ok')} />} />
+                 actions={<TblBtn label="Ver propuesta" variant="green" onClick={() => showModal(propuestaModal('Farmacia Beltrán','propuesta'))} />} />
           <Alert tone="blue" title="Farmacia Beltrán · servicio laboral"
                  sub="Detectado crecimiento de plantilla · ticket adicional 1.800€/año · prob. 62%"
-                 actions={<TblBtn label="Enviar oferta" onClick={() => showToast('Oferta servicio laboral · Farmacia Beltrán · 1.800€/año · enviada','ok')} />} />
+                 actions={<TblBtn label="Ver propuesta" onClick={() => showModal(propuestaModal('Farmacia Beltrán','upselling'))} />} />
           <Alert tone="blue" title="Industrias Clave · gestión nóminas"
                  sub="18 empleados · actualmente externalizado · ticket potencial 3.600€/año · prob. 58%"
-                 actions={<TblBtn label="Generar propuesta" onClick={() => showToast('Propuesta nóminas · Industrias Clave · 3.600€/año · KonGest IA preparando','ok')} />} />
+                 actions={<TblBtn label="Ver propuesta" onClick={() => showModal(propuestaModal('Industrias Clave S.A.','upselling'))} />} />
         </Card>
         <Card title="Benchmark rentabilidad por servicio" ia>
           <div style={{display:'flex',flexDirection:'column',gap:10,marginTop:6}}>
@@ -498,13 +508,13 @@ export function DirSucesion() {
       <div className="g2">
         <Card title="Documentación clave lista" ia>
           <Alert tone="green" title="Clientes — fichas completas" sub="142 clientes con historial fiscal, preferencias y contexto de 5 años · exportable"
-                 actions={<TblBtn label="Exportar ficha" variant="green" onClick={() => showToast('142 fichas clientes exportadas · PDF integral · KonGest IA','ok')} />} />
+                 actions={<TblBtn label="Ver informe" variant="green" onClick={() => showModal(informeModal('BI'))} />} />
           <Alert tone="green" title="Procesos — playbook operativo" sub="1.842 procesos documentados con IA · variantes por sector y régimen fiscal"
-                 actions={<TblBtn label="Ver playbook" variant="green" onClick={() => showToast('Playbook IA · 1.842 procesos · consulta semántica activa','info')} />} />
+                 actions={<TblBtn label="Ver informe" variant="green" onClick={() => showModal(informeModal('rentabilidad'))} />} />
           <Alert tone="blue" title="Normativa — historial aplicado" sub="4 años de cambios normativos aplicados y trazabilidad total por cliente"
-                 actions={<TblBtn label="Descargar histórico" onClick={() => showToast('Histórico normativo exportado · 4 años · 1.380 cambios aplicados','ok')} />} />
+                 actions={<TblBtn label="Ver informe" onClick={() => showModal(informeModal('BI'))} />} />
           <Alert tone="amber" title="24 procesos en refinamiento" sub="IA detectó ambigüedad · requieren decisión manual para fijar criterio"
-                 actions={<TblBtn label="Revisar" variant="amber" onClick={() => showToast('24 procesos pendientes · criterios a definir · lista priorizada por IA','warn')} />} />
+                 actions={<TblBtn label="Ver detalle" variant="amber" onClick={() => showModal(alertaModal({tipo:'amber',titulo:'24 procesos en refinamiento',sub:'IA detectó ambigüedad · requieren decisión manual para fijar criterio · lista priorizada por IA disponible en el playbook'}))} />} />
         </Card>
         <Card title="Plan de transición IA" ia>
           <div style={{display:'flex',flexDirection:'column',gap:10,marginTop:6}}>

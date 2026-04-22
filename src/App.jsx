@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Toaster } from './components/Toast'
+import { ActionModalHost } from './components/ActionModal'
 import { RolePicker } from './RolePicker'
 import { LoginScreen } from './LoginScreen'
 import { AppShell } from './AppShell'
@@ -19,6 +20,7 @@ export default function App() {
       {screen === 'login' && role && <LoginScreen role={role} onLogin={doLogin} onBack={goBack} />}
       {screen === 'app' && role === 'cliente' && <ClienteShell onLogout={goBack} />}
       {screen === 'app' && role !== 'cliente' && <AppShell role={role} onLogout={goBack} />}
+      <ActionModalHost />
       <Toaster />
     </>
   )

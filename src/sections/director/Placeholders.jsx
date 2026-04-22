@@ -2,23 +2,23 @@ import { useState } from 'react'
 import { PageHdr, KpiGrid, Card, Alert, IaBox, TblBtn, IaTicker, InfoRow, Pbar, Placeholder } from '../common'
 import { ChartJS } from '../../components/ChartJS'
 import { showToast } from '../../components/Toast'
+import { showModal } from '../../components/ActionModal'
+import { fichaModal, propuestaModal, protocoloModal, informeModal } from '../../lib/modals'
 
+// Mapea el tipo de acción histórica al modal correcto
 const dirAction = (type, ctx) => {
-  const msgs = {
-    reclamar:`KonGest IA envió reclamación automática a ${ctx}`,
-    protocolo:`Protocolo de riesgo tributario activado para ${ctx}`,
-    'doc-prev':`Documentación preventiva generada por IA para ${ctx}`,
-    retencion:`Plan de retención IA activado — contacto programado con ${ctx}`,
-    redistribuir:`IA redistribuyendo carga — ${ctx} liberado de tareas automatizables`,
-    honorarios:`Motor de precio IA calculando honorarios óptimos para ${ctx}`,
-    propuesta:`Propuesta de actualización generada por IA para ${ctx}`,
-    upselling:`IA iniciando secuencia de upselling para ${ctx}`,
-    exportar:'Informe ejecutivo exportado por IA en PDF',
-    'ver-expediente':`Expediente IA de ${ctx} cargado · 3 alertas, score de riesgo, últimas interacciones`,
-    'alerta-ia':`Alerta IA activada — ${ctx} en seguimiento prioritario`,
-    simular:`Simulación fiscal IA ejecutada para ${ctx}`,
-  }
-  showToast(msgs[type] || 'Acción IA ejecutada', type.includes('doc') || type.includes('protocolo') ? 'warn' : 'ok')
+  const fullName = (ctx || '').includes('Almacenes Valdés') && !ctx.includes('S.L.') ? 'Almacenes Valdés S.L.' : ctx
+  if (type === 'propuesta') return showModal(propuestaModal(fullName, 'propuesta'))
+  if (type === 'upselling') return showModal(propuestaModal(fullName, 'upselling'))
+  if (type === 'honorarios') return showModal(propuestaModal(fullName, 'honorarios'))
+  if (type === 'retencion') return showModal(propuestaModal(fullName, 'retencion'))
+  if (type === 'protocolo') return showModal(protocoloModal(fullName, 'protocolo'))
+  if (type === 'doc-prev') return showModal(protocoloModal(fullName, 'doc-prev'))
+  if (type === 'alerta-ia') return showModal(protocoloModal(fullName, 'alerta-ia'))
+  if (type === 'ver-expediente') return showModal(fichaModal(fullName))
+  if (type === 'exportar') return showModal(informeModal('BI'))
+  // Fallback
+  showToast(`${type} · ${ctx}`, 'info')
 }
 
 const TICKER = [
