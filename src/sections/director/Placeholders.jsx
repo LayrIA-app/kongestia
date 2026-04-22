@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PageHdr, KpiGrid, Card, Alert, IaBox, TblBtn, IaTicker, InfoRow, Pbar, Placeholder } from '../common'
+import { ChartJS } from '../../components/ChartJS'
 import { showToast } from '../../components/Toast'
 
 const dirAction = (type, ctx) => {
@@ -203,15 +204,12 @@ export function DirBI() {
       ]} />
       <div className="g2 mb14">
         <Card title="Evolución margen operativo" ia>
-          <div style={{display:'flex',alignItems:'flex-end',gap:8,height:180,padding:'12px 4px 8px'}}>
-            {[['2022',42,'#94A3B8'],['2023',48,'#94A3B8'],['2024',54,'#1A78FF'],['2025',57,'#1A78FF'],['2026',68,'#1a9e4a']].map(([y,p,c]) => (
-              <div key={y} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4,height:'100%',justifyContent:'flex-end'}}>
-                <div style={{fontSize:'.62rem',color:'#7a8899',fontWeight:700}}>{p}%</div>
-                <div style={{width:'100%',height:`${p}%`,background:`linear-gradient(180deg,${c},${c}aa)`,borderRadius:'4px 4px 0 0'}}/>
-                <div style={{fontSize:'.62rem',color:'#7a8899'}}>{y}</div>
-              </div>
-            ))}
-          </div>
+          <ChartJS type="line"
+                   data={{
+                     labels:['2022','2023','2024','2025','2026'],
+                     datasets:[{label:'Margen %',data:[42,48,54,57,68],borderColor:'#1A78FF',backgroundColor:'rgba(26,120,255,.15)',fill:true,tension:.35,borderWidth:2,pointRadius:4,pointBackgroundColor:'#1A78FF'}]
+                   }}
+                   options={{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:80,ticks:{color:'#7a8899'},grid:{color:'rgba(7,24,48,.05)'}},x:{ticks:{color:'#7a8899'},grid:{display:false}}}}}/>
           <IaBox>El salto de 57% a 68% en 2026 está directamente correlacionado con la automatización IA de 180h/mes de tareas operativas.</IaBox>
         </Card>
         <Card title="KPIs de negocio vs sector">

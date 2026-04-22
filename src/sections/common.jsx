@@ -14,9 +14,9 @@ export function PageHdr({ title, sub, badge, actions }) {
   )
 }
 
-export function Kpi({ value, label, delta, deltaDir, kc }) {
+export function Kpi({ value, label, delta, deltaDir, kc, grad }) {
   return (
-    <div className="kpi" style={kc ? { '--kc': kc } : undefined}>
+    <div className={`kpi risen${grad ? ' kpi-grad' : ''}`} style={kc ? { '--kc': kc } : undefined}>
       <div className="kpi-val">{value}</div>
       <div className="kpi-label">{label}</div>
       {delta && <div className={`kpi-delta ${deltaDir || 'up'}`}>{delta}</div>}
@@ -58,11 +58,8 @@ export function IaBox({ children, style }) {
 }
 
 export function TblBtn({ label, onClick, variant = 'blue' }) {
-  const bg = { blue:'rgba(26,120,255,.1)', red:'rgba(224,48,48,.08)', green:'rgba(26,158,74,.08)', amber:'rgba(232,160,16,.08)' }[variant]
-  const col = { blue:'#1A78FF', red:'#e03030', green:'#1a9e4a', amber:'#e8a010' }[variant]
-  const brd = { blue:'rgba(26,120,255,.25)', red:'rgba(224,48,48,.2)', green:'rgba(26,158,74,.2)', amber:'rgba(232,160,16,.25)' }[variant]
   return (
-    <button onClick={onClick} style={{padding:'3px 10px',borderRadius:5,border:`1px solid ${brd}`,background:bg,color:col,fontSize:'.58rem',fontWeight:700,cursor:'pointer',fontFamily:'DM Sans,sans-serif'}}>
+    <button className={`tbl-btn tbl-btn-${variant}`} onClick={onClick}>
       {label}
     </button>
   )
@@ -99,7 +96,7 @@ export function IaTicker({ messages }) {
         <div style={{width:6,height:6,borderRadius:'50%',background:'#1A78FF',animation:'dotPulse 1.2s infinite'}}/>
         <span style={{fontSize:'.54rem',fontWeight:800,color:'#1A78FF',letterSpacing:'.1em',textTransform:'uppercase'}}>IA LIVE</span>
       </div>
-      <div style={{fontSize:'.66rem',color:'var(--text2)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',flex:1}}>
+      <div className="dir-ticker-text" style={{fontSize:'.66rem',color:'var(--text2)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',flex:1}}>
         {items[idx]}
       </div>
     </div>
@@ -118,8 +115,8 @@ export function InfoRow({ label, value, color }) {
 export function Pbar({ pct, color }) {
   const c = color || '#1A78FF'
   return (
-    <div style={{height:5,background:'#E4ECF7',borderRadius:3,overflow:'hidden'}}>
-      <div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(90deg,${c},${c}88)`,borderRadius:3,transition:'width 1s cubic-bezier(.4,0,.2,1)'}}/>
+    <div className="pbar">
+      <div className="pbar-fill" style={{width:`${pct}%`,background:`linear-gradient(90deg,${c},${c}88)`}}/>
     </div>
   )
 }

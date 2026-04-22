@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { PageHdr, KpiGrid, Card, Alert, IaBox, TblBtn, IaTicker, Pbar } from '../common'
+import { ChartJS } from '../../components/ChartJS'
 import { showToast } from '../../components/Toast'
 
 const TICKER = [
@@ -84,21 +85,16 @@ export function DirPrevision() {
       ]} />
       <div className="g2">
         <Card title="Proyección mensual 2026 — 3 escenarios" ia>
-          <div style={{display:'flex',alignItems:'flex-end',gap:6,height:200,padding:'12px 0 8px'}}>
-            {[90,104,118,124,132,138,145,152,160,168,174,182].map((v, i) => (
-              <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,justifyContent:'flex-end',height:'100%'}}>
-                <div style={{width:'100%',height:`${v*0.8}%`,background:'linear-gradient(180deg,#1A78FF,#00C8FF)',borderRadius:'3px 3px 0 0',position:'relative'}}>
-                  <div style={{position:'absolute',top:`-${Math.min(v*0.25,50)}%`,left:0,right:0,height:'100%',borderTop:'2px dashed rgba(148,163,184,.6)',background:'transparent'}}/>
-                </div>
-                <div style={{fontSize:'.54rem',color:'#7a8899'}}>{['E','F','M','A','M','J','J','A','S','O','N','D'][i]}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{display:'flex',gap:16,marginTop:4,flexWrap:'wrap'}}>
-            <div style={{display:'flex',alignItems:'center',gap:5}}><div style={{width:10,height:3,background:'#1A78FF',borderRadius:2}}/><span style={{fontSize:'.6rem',color:'#7a8899'}}>Optimista</span></div>
-            <div style={{display:'flex',alignItems:'center',gap:5}}><div style={{width:10,height:3,background:'#00C8FF',borderRadius:2}}/><span style={{fontSize:'.6rem',color:'#7a8899'}}>Base</span></div>
-            <div style={{display:'flex',alignItems:'center',gap:5}}><div style={{width:10,height:3,background:'#94A3B8',borderRadius:2}}/><span style={{fontSize:'.6rem',color:'#7a8899'}}>Pesimista</span></div>
-          </div>
+          <ChartJS type="line" height={200}
+                   data={{
+                     labels:['E','F','M','A','M','J','J','A','S','O','N','D'],
+                     datasets:[
+                       {label:'Optimista',data:[100,118,135,144,156,164,175,184,196,208,220,232],borderColor:'#1A78FF',backgroundColor:'rgba(26,120,255,.06)',fill:false,tension:.35,borderWidth:2,pointRadius:3,pointBackgroundColor:'#1A78FF'},
+                       {label:'Base',data:[90,104,118,124,132,138,145,152,160,168,174,182],borderColor:'#00C8FF',backgroundColor:'rgba(0,200,255,.1)',fill:true,tension:.35,borderWidth:2,pointRadius:3,pointBackgroundColor:'#00C8FF'},
+                       {label:'Pesimista',data:[80,90,98,102,108,112,116,120,124,128,131,134],borderColor:'#94A3B8',backgroundColor:'transparent',fill:false,tension:.35,borderDash:[4,4],borderWidth:1.5,pointRadius:0},
+                     ]
+                   }}
+                   options={{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#7a8899',font:{size:10},boxWidth:14,padding:10}}},scales:{y:{beginAtZero:true,ticks:{color:'#7a8899',callback:v=>v+'k€'},grid:{color:'rgba(7,24,48,.05)'}},x:{ticks:{color:'#7a8899'},grid:{display:false}}}}}/>
         </Card>
         <Card title="Ingresos por tipo de contrato">
           <div style={{display:'flex',flexDirection:'column',gap:10,marginTop:8}}>
