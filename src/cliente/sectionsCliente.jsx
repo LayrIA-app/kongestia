@@ -655,7 +655,7 @@ export function ClFuturo() {
                  actions={<TblBtn label="Activar" variant="green" onClick={() => showModal(deduccionModal({nombre:'Amortización acelerada · Equipos informáticos Q4',ahorro:'1.200€',descripcion:'La inversión prevista en Q4 2026 en equipos informáticos (servidores, portátiles, infraestructura) puede amortizarse al 100% durante el primer año aplicando el régimen especial de pymes.'}))} />} />
           <Alert tone="green" title="Plan pensiones autónomos · +680€"
                  sub="Aportación óptima 5.750€/año · ahorro IRPF 1.150€ · recuperable desde jubilación"
-                 actions={<TblBtn label="Simular" variant="green" onClick={() => showToast('Plan pensiones · aportación 5.750€ · ahorro IRPF 1.150€ · simulación completa','info')} />} />
+                 actions={<TblBtn label="Simular" variant="green" onClick={() => showModal(deduccionModal({nombre:'Plan de pensiones autónomos 2026',ahorro:'1.150€ IRPF',descripcion:'Con una aportación óptima de 5.750€/año al plan de pensiones autónomos, tu IRPF 2026 se reduce en 1.150€ (tipo marginal aplicado). Aportación fiscalmente deducible · recuperable desde jubilación.'}))} />} />
           <Alert tone="blue" title="Régimen pyme vs general · revisión 2027"
                  sub="Si mantienes crecimiento actual, en 2027 podría ser ventajoso régimen general · KonGest IA monitorizando" />
           <Alert tone="amber" title="Obligación Verifactu · Julio 2026"

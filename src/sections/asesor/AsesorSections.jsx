@@ -5,7 +5,7 @@ import { showModal } from '../../components/ActionModal'
 import {
   fichaModal, modeloAEATModal, firmarModeloModal, recordatorioModal,
   anomaliaModal, vencimientoModal, documentoModal, alertaModal, informeModal,
-  propuestaModal, protocoloModal,
+  propuestaModal, protocoloModal, busquedaDocumentosModal,
 } from '../../lib/modals'
 
 const TICKER_AS = [
@@ -360,7 +360,7 @@ export function AsDocumentos() {
         <Card title="Buscar documentos con IA">
           <div style={{display:'flex',gap:8,marginBottom:14,flexWrap:'wrap'}}>
             <input value={query} onChange={e => setQuery(e.target.value)} type="text" placeholder="Ej: facturas TechPyme marzo 2026..." style={{flex:1,minWidth:180,padding:'10px 14px',background:'#F4F7FC',border:'1.5px solid #E0E8F4',borderRadius:8,fontSize:'.85rem',fontFamily:'DM Sans,sans-serif',color:'#071830',outline:'none'}} />
-            <button className="btn btn-blue" onClick={() => showToast(`KonGest IA buscando: ${query.trim() || 'todos los documentos'} · 1.842 docs indexados`,'info')}>Buscar</button>
+            <button className="btn btn-blue" onClick={() => showModal(busquedaDocumentosModal(query))}>Buscar</button>
           </div>
           <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:14}}>
             {['Facturas pendientes','Contratos 2026','Notificaciones AEAT','Nóminas marzo','Escrituras'].map(t => (

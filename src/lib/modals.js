@@ -608,6 +608,48 @@ export function deduccionModal({nombre, ahorro, descripcion}) {
   }
 }
 
+/* ════ Búsqueda documentos IA (resultados) ════ */
+export function busquedaDocumentosModal(query) {
+  const q = (query || '').trim() || 'todos los documentos'
+  const results = [
+    ['FRA-2026-0142','TechPyme S.L.','Factura recibida · Hoy','4.840,00€','b-ok'],
+    ['Contrato alquiler local','Almacenes Valdés S.L.','Contrato · Ayer','—','b-ok'],
+    ['Escritura constitución','Construcciones Arco','Escritura · 15 Mar','—','b-ok'],
+    ['Nómina marzo 2026','Grupo Inversor Norte','Nómina · 14 Mar','—','b-ok'],
+    ['Resolución AEAT','Transportes Montes','Notificación · 12 Mar','—','b-amber'],
+    ['FRA-2026-0141','Almacenes Valdés S.L.','Factura recibida · Ayer','12.400,00€','b-ok'],
+    ['FRA-2026-0140','Construcciones Arco','Factura recibida · 2d','8.920,00€','b-ok'],
+    ['FRA-2026-0139','María González','Factura recibida · 2d','1.240,00€','b-amber'],
+  ]
+  return {
+    type:'propuesta', accent:'#1A78FF',
+    eyebrow:'Búsqueda KonGest IA · 0.4s',
+    title:`Resultados · "${q}"`,
+    subtitle:`${results.length} documentos encontrados · 1.842 totales indexados`,
+    badges:[{cls:'b-blue',txt:'OCR IA · lenguaje natural'}],
+    fields:[
+      {label:'Consulta', value:q, span:'full'},
+      {label:'Documentos totales', value:'1.842'},
+      {label:'Tiempo búsqueda', value:'0.4s'},
+      {label:'Precisión semántica', value:'94%'},
+    ],
+    sections:[
+      {title:'Resultados (top 8)', rows:results.map(r => [`${r[0]} · ${r[1]}`, r[2], '#7a8899'])},
+      {title:'Acción IA', note:'KonGest IA entiende lenguaje natural y devuelve documentos por contexto (no solo por nombre). Prueba: "facturas pendientes de cobro del Q1" o "contratos que vencen este año".'},
+    ],
+    editLabel:'Refinar búsqueda',
+    email:{
+      to:'',
+      subject:`Resultado búsqueda KonGest IA · ${q}`,
+      body:`Te envío los resultados de búsqueda "${q}":\n\n${results.slice(0,5).map(r => `· ${r[0]} · ${r[1]} · ${r[2]}`).join('\n')}\n\nPuedes acceder al documento completo desde el panel de KonGest IA.`,
+    },
+    whatsapp:{
+      phone:'',
+      text:`Resultados búsqueda "${q}" en KonGest IA: ${results.length} documentos. Top: ${results.slice(0,3).map(r => r[0]).join(', ')}. Accede desde el panel.`,
+    },
+  }
+}
+
 /* ════ Util: primer nombre ════ */
 function firstName(nombreCompleto) {
   if (!nombreCompleto) return ''
