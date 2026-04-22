@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { showToast } from '../components/Toast'
 
 export function PageHdr({ title, sub, badge, actions }) {
@@ -80,6 +81,45 @@ export function Alert({ tone = 'blue', title, sub, actions }) {
         {sub && <div className="alert-sub">{sub}</div>}
       </div>
       {actions}
+    </div>
+  )
+}
+
+export function IaTicker({ messages }) {
+  const items = Array.isArray(messages) ? messages : [messages]
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    if (items.length <= 1) return
+    const t = setInterval(() => setIdx(i => (i + 1) % items.length), 4200)
+    return () => clearInterval(t)
+  }, [items.length])
+  return (
+    <div style={{background:'#F4F7FC',borderRadius:8,padding:'7px 14px',marginBottom:14,display:'flex',alignItems:'center',gap:10,overflow:'hidden'}}>
+      <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
+        <div style={{width:6,height:6,borderRadius:'50%',background:'#1A78FF',animation:'dotPulse 1.2s infinite'}}/>
+        <span style={{fontSize:'.54rem',fontWeight:800,color:'#1A78FF',letterSpacing:'.1em',textTransform:'uppercase'}}>IA LIVE</span>
+      </div>
+      <div style={{fontSize:'.66rem',color:'var(--text2)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',flex:1}}>
+        {items[idx]}
+      </div>
+    </div>
+  )
+}
+
+export function InfoRow({ label, value, color }) {
+  return (
+    <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid #F0F4F8'}}>
+      <span style={{fontSize:'.73rem',color:'#1a2a3a'}}>{label}</span>
+      <span style={{fontSize:'.76rem',fontWeight:700,color:color || '#071830'}}>{value}</span>
+    </div>
+  )
+}
+
+export function Pbar({ pct, color }) {
+  const c = color || '#1A78FF'
+  return (
+    <div style={{height:5,background:'#E4ECF7',borderRadius:3,overflow:'hidden'}}>
+      <div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(90deg,${c},${c}88)`,borderRadius:3,transition:'width 1s cubic-bezier(.4,0,.2,1)'}}/>
     </div>
   )
 }
